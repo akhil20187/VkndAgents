@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Details - Temporal Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #000000;
+            --background: #ffffff;
+            --surface: #f9fafb;
+            --border: #e5e7eb;
+            --text-main: #111827;
+            --text-secondary: #6b7280;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background: var(--background);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            height: 60px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            background: white;
+            justify-content: space-between;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.failed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-badge.in_progress {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-badge.pending {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Meta */
+        .meta-sidebar {
+            width: 300px;
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            background: var(--surface);
+            overflow-y: auto;
+        }
+
+        .meta-group {
+            margin-bottom: 24px;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .desc-box {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #374151;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+        }
+
+        .tab-btn {
+            padding: 16px 4px;
+            margin-right: 24px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Tab Content */
+        .tab-content {
+            flex: 1;
+            overflow: hidden;
+            display: none;
+            /* Hidden by default */
+        }
+
+        #tab-logs {
+            display: block;
+        }
+
+        /* Default active */
+
+        /* Logs View */
+        #logs-content {
+            padding: 20px;
+            margin: 0;
+            font-family: 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        /* Files Split View */
+        #tab-files {
+            display: none;
+            height: 100%;
+            flex-direction: row;
+        }
+
+        .file-list {
+            width: 250px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .file-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .file-item:hover {
+            background: #f3f4f6;
+        }
+
+        .file-item.active {
+            background: #e5e7eb;
+            border-left: 3px solid var(--primary);
+        }
+
+        .file-icon {
+            font-size: 16px;
+        }
+
+        .file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-size {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .preview-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f3f4f6;
+        }
+
+        .preview-header {
+            height: 48px;
+            border-bottom: 1px solid var(--border);
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+        }
+
+        .preview-content {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            /* Center images */
+            align-items: center;
+            position: relative;
+        }
+
+        .preview-content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .preview-content img {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .preview-content pre {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            background: white;
+            overflow: auto;
+            font-family: monospace;
+        }
+
+        .btn {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-main);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="/static/index.html" class="back-link">
+            ← Back to Board
+        </a>
+        <div class="task-title">
+            Task <span id="task-id-display">...</span>
+            <span id="status-badge" class="status-badge">...</span>
+        </div>
+        <div>
+            <!-- Actions could go here -->
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="meta-sidebar">
+            <div class="meta-group">
+                <div class="meta-label">DESCRIPTION</div>
+                <div id="task-desc-display" class="desc-box">Loading...</div>
+            </div>
+
+            <div class="meta-group">
+                <div class="meta-label">WORKFLOW</div>
+                <div id="meta-workflow" class="meta-value">-</div>
+            </div>
+
+            <div class="meta-group">
+                <div class="meta-label">CREATED</div>
+                <div id="meta-created" class="meta-value">-</div>
+            </div>
+
+            <div class="meta-group">
+                <div class="meta-label">STARTED</div>
+                <div id="meta-started" class="meta-value">-</div>
+            </div>
+
+            <div class="meta-group">
+                <div class="meta-label">COMPLETED</div>
+                <div id="meta-completed" class="meta-value">-</div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-area">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="logs">Execution Logs</button>
+                <button class="tab-btn" data-tab="files">Generated Files</button>
+            </div>
+
+            <!-- Tab: Logs -->
+            <div id="tab-logs" class="tab-content">
+                <pre id="logs-content">Loading execution logs...</pre>
+            </div>
+
+            <!-- Tab: Files -->
+            <div id="tab-files" class="tab-content">
+                <div class="file-list" id="file-list">
+                    <!-- List injected here -->
+                </div>
+                <div class="preview-pane">
+                    <div class="preview-header">
+                        <span id="preview-filename" style="font-weight: 500; font-size: 14px;">Select a file</span>
+                        <a id="preview-download" href="#" class="btn btn-primary" download>Download</a>
+                    </div>
+                    <div id="preview-pane" class="preview-content">
+                        <!-- Preview content here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/task_page.js"></script>
+</body>
+
+</html>

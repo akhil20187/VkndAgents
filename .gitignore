@@ -1,0 +1,38 @@
+# Add database file to gitignore
+task_management.db
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Secrets
+.env
+
+# Generated Output
+output/
+
+# Tool Metadata
+.auto-claude/
+.gemini/

@@ -1,0 +1,11 @@
+Testing MainAgent task generation...
+{"db_path": "/Users/akhilesh/Documents/Workplace/temporal-claude/task_management.db", "event": "database_initialized", "timestamp": "2026-01-06T04:46:47.594692Z"}
+{"agent_id": "main_agent_test-debug-workflow", "model": "claude-haiku-4-5", "event": "agent_initialized", "timestamp": "2026-01-06T04:46:47.620244Z"}
+Agent initialized successfully.
+Running generate_tasks()...
+{"workflow_id": "test-debug-workflow", "event": "main_agent_generating_tasks", "timestamp": "2026-01-06T04:46:47.620303Z"}
+{"task_id": "task_41bf517c", "workflow_id": "test-debug-workflow", "event": "task_created", "timestamp": "2026-01-06T04:46:50.250361Z"}
+{"task_id": "task_31f309fe", "workflow_id": "test-debug-workflow", "event": "task_created", "timestamp": "2026-01-06T04:46:50.253634Z"}
+{"task_id": "task_073c4cf9", "workflow_id": "test-debug-workflow", "event": "task_created", "timestamp": "2026-01-06T04:46:50.254530Z"}
+{"agent_id": "main_agent_test-debug-workflow", "iterations": 2, "event": "agent_completed", "timestamp": "2026-01-06T04:46:52.834754Z"}
+Generation result: {'agent_id': 'main_agent_test-debug-workflow', 'final_response': "Perfect! I've successfully created all 3 tasks for your workflow. Here's a summary:\n\n**Tasks Created:**\n\n1. **AI Newsletter Task** (ID: task_41bf517c)\n   - Status: Pending\n   - Description: Generate a comprehensive AI newsletter summarizing the latest happenings in the AI world from the last 24 hours with major developments, breakthroughs, product launches, and research findings.\n\n2. **Financial News - Gold & Silver Task** (ID: task_31f309fe)\n   - Status: Pending\n   - Description: Research and compile a report on Gold and Silver financial news from yesterday or today, including market trends, price movements, expert analysis, and summaries from various sources.\n\n3. **Model Release News Task** (ID: task_073c4cf9)\n   - Status: Pending\n   - Description: Research and summarize official feature releases and announcements from Claude (Anthropic), Google Gemini, and OpenAI from the last 24-48 hours on their official platforms.\n\nAll tasks have been added to the pending queue and are ready for your sub-agents to process. Each task has clear requirements regarding timeframes, topics, and sources to guide the research and compilation work.", 'iterations': 2, 'conversation_length': 3}
