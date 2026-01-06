@@ -595,7 +595,7 @@ async def get_task_files(task_id: str):
 
 
 @app.get("/api/tasks/{task_id}/files/{filename}")
-async def get_task_file(task_id: str, filename: str):
+async def get_task_file(task_id: str, filename: str, preview: bool = False):
     """
     Serve a specific task output file.
     Purpose: Allow frontend to download/display task-generated files.
@@ -608,7 +608,13 @@ async def get_task_file(task_id: str, filename: str):
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     
-    return FileResponse(file_path, filename=filename)
+    # If preview is True, don't set filename in FileResponse to allow inline display
+    # unless it's a type that requires it (but usually omitting filename defaults to inline)
+    # Actually, explicit content_disposition_type="inline" is better.
+    return FileResponse(
+        file_path, 
+        filename=filename if not preview else None
+    )
 
 
 # Serve static files (CSS, JS)

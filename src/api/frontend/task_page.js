@@ -133,11 +133,11 @@ function previewFile(file) {
 
     if (['html', 'htm'].includes(ext)) {
         const iframe = document.createElement('iframe');
-        iframe.src = file.url;
+        iframe.src = file.url + '?preview=true';
         previewContainer.appendChild(iframe);
     } else if (['jpg', 'jpeg', 'png', 'gif', 'svg'].includes(ext)) {
         const img = document.createElement('img');
-        img.src = file.url;
+        img.src = file.url + '?preview=true';
         previewContainer.appendChild(img);
     } else {
         // Text/Code
