@@ -131,28 +131,48 @@ a {
 .app-sidebar {
     background-color: var(--surface);
     border-right: 1px solid var(--border);
-    padding: 40px 0;
+    padding: 24px 0;
     display: flex;
     flex-direction: column;
 }
 
 .nav-item {
-    padding: 16px 40px;
-    color: var(--text-primary);
+    padding: 14px 32px;
+    color: var(--text-muted);
     font-weight: 500;
+    font-size: 15px;
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
-    border-left: 4px solid transparent;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-icon {
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
 }
 
 .nav-item:hover {
-    background-color: rgba(0, 0, 0, 0.03);
+    background-color: rgba(38, 15, 20, 0.04);
+    color: var(--primary);
+}
+
+.nav-item:hover .nav-icon {
+    opacity: 1;
 }
 
 .nav-item.active {
     background-color: #EAEAE5;
     border-left-color: var(--primary);
     font-weight: 600;
+    color: var(--primary);
+}
+
+.nav-item.active .nav-icon {
+    opacity: 1;
 }
 
 /* Main Content */
@@ -188,9 +208,11 @@ a {
     margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 2px solid var(--primary);
-    padding-bottom: 20px;
+    align-items: center;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 20px;
 }
 
 .section-title {
@@ -199,12 +221,75 @@ a {
     letter-spacing: -0.03em;
 }
 
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-left: 24px;
+    border-left: 1px solid var(--border);
+}
+
+.sort-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sort-group .label {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.select-input {
+    height: 36px;
+    padding: 0 12px;
+    background-color: white;
+}
+
+.view-toggles {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+}
+
+.view-toggles .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border: none;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text-muted);
+}
+
+.view-toggles .btn.active {
+    background: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    color: var(--primary);
+    font-weight: 600;
+}
+
 /* UI Components */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 12px 24px;
+    padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
@@ -213,6 +298,7 @@ a {
     transition: all 0.2s;
     border: none;
     outline: none;
+    height: 40px;
 }
 
 .btn-primary {
@@ -462,4 +548,137 @@ textarea.input-field {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #A8A8A8;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 14px;
+        overflow-y: auto;
+        /* Allow body scroll on mobile */
+    }
+
+    /* Layout Stack */
+    .app-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto 1fr;
+        height: auto;
+        min-height: 100vh;
+    }
+
+    /* Header */
+    .app-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        padding: 0 16px;
+        height: 60px;
+    }
+
+    .brand {
+        font-size: 18px;
+    }
+
+    /* Sidebar */
+    .app-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 0;
+        overflow-x: auto;
+    }
+
+    .app-sidebar nav {
+        display: flex;
+        width: 100%;
+    }
+
+    .nav-item {
+        padding: 12px 16px;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+        flex: 1;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .nav-item.active {
+        border-left: none;
+        border-bottom-color: var(--primary);
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+
+    /* Main Content */
+    .app-main {
+        padding: 20px 16px;
+        overflow-y: visible;
+        /* Let body handle scroll */
+        height: auto;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .section-title {
+        font-size: 24px;
+    }
+
+    .section-header .btn {
+        width: 100%;
+    }
+
+    .view-toggles {
+        width: 100%;
+        margin-left: 0 !important;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    /* Kanban Board */
+    .kanban-board {
+        grid-template-columns: 1fr;
+        height: auto;
+        gap: 16px;
+        overflow-x: visible;
+    }
+
+    .kanban-column {
+        height: auto;
+        min-width: 0;
+        /* Allow shrinking */
+        max-height: 500px;
+        /* Max height per column before scroll */
+        overflow-y: auto;
+    }
+
+    .task-list-container {
+        max-height: 400px;
+    }
+
+    /* MCP Config Editor */
+    #mcpEditor {
+        height: 300px !important;
+    }
+
+    /* Modals */
+    .modal-content {
+        max-width: 95%;
+        padding: 24px;
+        margin: 16px;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* Skills Grid */
+    #skills-list {
+        grid-template-columns: 1fr;
+    }
+
+    .btn {
+        padding: 10px 16px;
+    }
 }

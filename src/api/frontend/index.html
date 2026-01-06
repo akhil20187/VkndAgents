@@ -30,16 +30,16 @@
         <aside class="app-sidebar">
             <nav>
                 <div class="nav-item active" data-view="tasks">
-                    Tasks Board
+                    <span class="nav-icon">📊</span> Tasks Board
                 </div>
                 <div class="nav-item" data-view="skills">
-                    Skills Library
+                    <span class="nav-icon">🧩</span> Skills Library
                 </div>
                 <div class="nav-item" data-view="mcps">
-                    MCP Config
+                    <span class="nav-icon">🔌</span> MCP Config
                 </div>
                 <div class="nav-item" data-view="env">
-                    Environment
+                    <span class="nav-icon">⚙️</span> Environment
                 </div>
             </nav>
         </aside>
@@ -51,24 +51,31 @@
             <section id="tasks-view" class="view-section active">
                 <div class="section-header">
                     <h2 class="section-title">Task Management</h2>
-                    <button class="btn btn-primary" id="createTaskBtn">
-                        + New Task
-                    </button>
-                    <!-- Integration with Workflow runner -->
-                    <button class="btn btn-secondary" id="runWorkflowBtn" style="margin-left: 10px;">
-                        Run Workflow
-                    </button>
-                    <div class="view-toggles" style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
-                        <span style="font-size: 12px; color: #666;">Sort by:</span>
-                        <select id="sortTasksSelect" class="btn btn-secondary" style="height: 32px; padding: 0 8px;">
-                            <option value="created_desc">Created (Newest)</option>
-                            <option value="created_asc">Created (Oldest)</option>
-                            <option value="completed_desc">Completed (Newest)</option>
-                            <option value="completed_asc">Completed (Oldest)</option>
-                        </select>
-                        <div style="width: 1px; height: 20px; background: #ddd; margin: 0 4px;"></div>
-                        <button class="btn btn-secondary active" id="viewKanbanBtn">Kanban</button>
-                        <button class="btn btn-secondary" id="viewListBtn">List</button>
+                    <div class="header-right-group">
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="createTaskBtn">
+                                + New Task
+                            </button>
+                            <!-- Integration with Workflow runner -->
+                            <button class="btn btn-secondary" id="runWorkflowBtn">
+                                Run Workflow
+                            </button>
+                        </div>
+                        <div class="header-controls">
+                            <div class="sort-group">
+                                <span class="label">Sort:</span>
+                                <select id="sortTasksSelect" class="btn btn-secondary select-input">
+                                    <option value="created_desc">Created (Newest)</option>
+                                    <option value="created_asc">Created (Oldest)</option>
+                                    <option value="completed_desc">Completed (Newest)</option>
+                                    <option value="completed_asc">Completed (Oldest)</option>
+                                </select>
+                            </div>
+                            <div class="view-toggles">
+                                <button class="btn btn-secondary active" id="viewKanbanBtn">KB</button>
+                                <button class="btn btn-secondary" id="viewListBtn">List</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
