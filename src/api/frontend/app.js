@@ -435,8 +435,17 @@ window.editTask = (taskId, event) => {
 
 // --- Skills ---
 let skillsData = []; // Store locally
+let currentSkill = null; // Currently selected skill
+let currentFile = null; // Currently selected file path
 
 async function loadSkills() {
+    // Determine which view to show
+    const gridView = document.getElementById('skills-grid-view');
+    const detailsView = document.getElementById('skill-details-view');
+
+    // If we were in details view, we might want to stay there if refreshing? 
+    // For now, let's default to grid view on full reload, but refresh data if just updating.
+
     const container = document.getElementById('skills-list');
     container.innerHTML = 'Loading...';
     try {
@@ -445,32 +454,236 @@ async function loadSkills() {
         skillsData = data.skills; // Save state
 
         container.innerHTML = '';
+        if (skillsData.length === 0) {
+            container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #666; padding: 40px;">No skills found. Create one to get started.</div>';
+            return;
+        }
+
         data.skills.forEach(skill => {
             const card = document.createElement('div');
             card.className = 'card';
+            card.style.cursor = 'pointer';
+
+            // Count files
+            const fileCount = skill.files ? skill.files.length : 0;
+
             card.innerHTML = `
-                <h4 style="margin-bottom: 10px;">${skill.name}</h4>
-                <div style="font-size: 12px; color: #666; margin-bottom: 10px;">SKILL.md</div>
-                <button class="btn btn-secondary" onclick="window.editSkill('${skill.name}')">Edit</button>
+                <div style="display:flex; justify-content:space-between; align-items:start;">
+                    <h4 style="margin-bottom: 10px;">${skill.name}</h4>
+                    <span style="font-size: 20px;">📦</span>
+                </div>
+                <div style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                    ${fileCount} files
+                </div>
+                <!-- <button class="btn btn-secondary" onclick="event.stopPropagation(); window.viewSkill('${skill.name}')">Open</button> -->
             `;
+
+            card.addEventListener('click', () => window.viewSkill(skill.name));
             container.appendChild(card);
         });
     } catch (e) {
         container.innerHTML = 'Error loading skills';
+        console.error(e);
     }
 }
 
+window.viewSkill = (skillName) => {
+    currentSkill = skillsData.find(s => s.name === skillName);
+    if (!currentSkill) return;
+
+    // Switch to details view
+    document.getElementById('skills-grid-view').style.display = 'none';
+    document.getElementById('skill-details-view').style.display = 'block';
+
+    // Update Header
+    document.getElementById('currentSkillName').textContent = currentSkill.name;
+
+    // Render File Tree
+    renderFileTree(currentSkill.files);
+
+    // Reset Editor
+    resetEditor();
+
+    // Auto-select SKILL.md if it exists
+    const readme = currentSkill.files.find(f => f.path === 'SKILL.md');
+    if (readme) {
+        loadFile(readme.path);
+    }
+};
+
+window.closeSkillDetails = () => {
+    currentSkill = null;
+    currentFile = null;
+    document.getElementById('skills-grid-view').style.display = 'grid'; // it was display:grid in css but style.display sets block usually. Wait, in HTML it's inline style grid. Good.
+    // wait, in my HTML replacement I set it to grid? No, I set it to display: grid in the style attribute.
+    // So restoring it to 'grid' is correct. But 'block' might break layout if I rely on grid.
+    // Actually, let's use check style.
+    document.getElementById('skills-grid-view').style.display = 'block'; // Outer container
+    document.getElementById('skill-details-view').style.display = 'none';
+
+    // Re-render grid to be safe or just show it
+    document.getElementById('skills-grid-view').querySelector('#skills-list').style.display = 'grid';
+    // The previous structure was: <div id="skills-grid-view"> ... <div id="skills-list" style="display:grid...">
+    // So hiding #skills-grid-view hides everything. Showing it as block is fine, because the inner div handles grid.
+
+    loadSkills(); // Refresh
+};
+
+function renderFileTree(files) {
+    const tree = document.getElementById('skill-file-tree');
+    tree.innerHTML = '';
+
+    if (!files || files.length === 0) {
+        tree.innerHTML = '<div style="padding:15px; color:#999; font-size:12px;">No files</div>';
+        return;
+    }
+
+    files.forEach(file => {
+        const item = document.createElement('div');
+        item.className = 'file-tree-item';
+        item.dataset.path = file.path;
+
+        const icon = file.type === 'directory' ? '📁' : '📄';
+
+        item.innerHTML = `
+            <span class="icon">${icon}</span>
+            <span class="name">${file.path}</span>
+        `;
+
+        if (file.type !== 'directory') {
+            item.addEventListener('click', () => loadFile(file.path));
+        }
+
+        tree.appendChild(item);
+    });
+}
+
+async function loadFile(path) {
+    if (!currentSkill) return;
+
+    // UI Update
+    document.querySelectorAll('.file-tree-item').forEach(el => el.classList.remove('active'));
+    const activeItem = document.querySelector(`.file-tree-item[data-path="${path}"]`);
+    if (activeItem) activeItem.classList.add('active');
+
+    currentFile = path;
+    document.getElementById('currentFileName').textContent = path;
+    const container = document.getElementById('skillEditorContainer');
+    container.innerHTML = '<div class="empty-state">Loading...</div>';
+    document.getElementById('saveSkillFileBtn').disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/skills/${currentSkill.name}/files?path=${encodeURIComponent(path)}`);
+
+        if (!res.ok) throw new Error('Failed to load file');
+
+        const data = await res.json();
+
+        if (data.is_binary) {
+            container.innerHTML = '<div class="empty-state">Binary file (cannot edit)</div>';
+        } else {
+            const textarea = document.createElement('textarea');
+            textarea.className = 'editor-textarea';
+            textarea.value = data.content;
+            textarea.id = 'active-file-content';
+
+            // Allow save
+            textarea.addEventListener('input', () => {
+                document.getElementById('saveSkillFileBtn').disabled = false;
+            });
+
+            container.innerHTML = '';
+            container.appendChild(textarea);
+        }
+
+    } catch (e) {
+        container.innerHTML = `<div class="empty-state" style="color:var(--error)">Error loading file: ${e.message}</div>`;
+    }
+}
+
+function resetEditor() {
+    currentFile = null;
+    document.getElementById('currentFileName').textContent = 'Select a file';
+    document.getElementById('skillEditorContainer').innerHTML = '<div class="empty-state">Select a file to edit</div>';
+    document.getElementById('saveSkillFileBtn').disabled = true;
+}
+
+// Save File
+document.getElementById('saveSkillFileBtn').addEventListener('click', async () => {
+    if (!currentSkill || !currentFile) return;
+
+    const content = document.getElementById('active-file-content').value;
+    const btn = document.getElementById('saveSkillFileBtn');
+
+    const originalText = btn.textContent;
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API_BASE}/skills/${currentSkill.name}/files`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: currentFile, content: content })
+        });
+
+        if (res.ok) {
+            // alert('Saved'); // Too intrusive?
+            // Maybe just temporary button state
+            btn.textContent = 'Saved!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                // Keep disabled until change
+            }, 2000);
+        } else {
+            alert('Error saving file');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Error saving file');
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+});
+
+// Add File (Simple implementation)
+window.addSkillFile = () => {
+    if (!currentSkill) return;
+
+    const path = prompt("Enter file path (e.g. scripts/new.py):");
+    if (!path) return;
+
+    // Create empty file
+    fetch(`${API_BASE}/skills/${currentSkill.name}/files`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: path, content: "" })
+    }).then(res => {
+        if (res.ok) {
+            // Refresh files
+            // We need to re-fetch the skill list to get updated file structure, 
+            // OR we just trust we added it and manually update local state.
+            // Simplest: refresh skills list then re-open? Or easier: just call API to get skill details?
+            // Our API structure list_skills returns EVERYTHING. So let's just reloadSkills and re-find current.
+            loadSkills().then(() => {
+                // Re-find and re-render
+                currentSkill = skillsData.find(s => s.name === currentSkill.name);
+                renderFileTree(currentSkill.files);
+                loadFile(path); // Open new file
+            });
+        } else {
+            alert("Failed to create file");
+        }
+    });
+};
+
+// Edit Skill Name (Not implemented in this view yet, maybe removing the global edit for now)
 window.editSkill = (name) => {
-    const skill = skillsData.find(s => s.name === name);
-    if (!skill) return;
-
-    document.getElementById('skillName').value = skill.name;
-    // document.getElementById('skillName').readOnly = true; // Maybe allow rename later? For now, let's keep it simple. If they change name, it creates new one. 
-    // Actually, creating new one with same name overwrites, so name should be readonly to imply update, or editable to imply copy/new.
-    // Let's make it readonly for "Edit" to avoid confusion, or just leave it.
-
-    document.getElementById('skillContent').value = skill.content;
-    document.getElementById('skillModal').classList.add('active');
+    // Legacy generic edit - redirected to details view now? 
+    // Or we can keep it for renaming?
+    // For now, disabling the old simple edit modal as it assumed single file content.
+    window.viewSkill(name);
 };
 
 // --- MCPs ---

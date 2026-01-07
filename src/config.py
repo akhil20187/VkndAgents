@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     # E2B Configuration
     e2b_api_key: Optional[str] = Field(None, alias="E2B_API_KEY")
     e2b_claude_template_id: str = Field(default="vqvrux7k1ay0yvczh8e3", alias="E2B_CLAUDE_TEMPLATE_ID")
+    e2b_timeout_seconds: int = Field(default=0, alias="E2B_TIMEOUT_SECONDS")  # 0 = no timeout
     
     # Database
     database_path: str = Field(default=str(PROJECT_ROOT / "task_management.db"), alias="DATABASE_PATH")

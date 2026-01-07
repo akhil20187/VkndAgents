@@ -140,15 +140,54 @@
 
             <!-- Skills View -->
             <section id="skills-view" class="view-section">
-                <div class="section-header">
-                    <h2 class="section-title">Skills Library</h2>
-                    <button class="btn btn-primary" id="createSkillBtn">
-                        + New Skill
-                    </button>
+                <!-- Skills Grid (List) -->
+                <div id="skills-grid-view">
+                    <div class="section-header">
+                        <h2 class="section-title">Skills Library</h2>
+                        <button class="btn btn-primary" id="createSkillBtn">
+                            + New Skill
+                        </button>
+                    </div>
+                    <div id="skills-list"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+                        <!-- Skills injected here -->
+                    </div>
                 </div>
-                <div id="skills-list"
-                    style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
-                    <!-- Skills injected here -->
+
+                <!-- Skill Details (File Explorer) -->
+                <div id="skill-details-view" style="display: none; height: 100%;">
+                    <div class="section-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <button class="btn btn-secondary" onclick="window.closeSkillDetails()">← Back</button>
+                            <h2 class="section-title" id="currentSkillName">Skill Name</h2>
+                        </div>
+                    </div>
+
+                    <div class="skill-details-container">
+                        <!-- Sidebar -->
+                        <div class="skill-sidebar">
+                            <div class="skill-sidebar-header">
+                                <span>Files</span>
+                                <button class="btn btn-sm" onclick="window.addSkillFile()"
+                                    style="font-size: 11px; padding: 2px 6px;">+</button>
+                            </div>
+                            <div id="skill-file-tree" class="file-tree">
+                                <!-- Tree items injected here -->
+                            </div>
+                        </div>
+
+                        <!-- Editor -->
+                        <div class="skill-editor-area">
+                            <div class="editor-header">
+                                <span id="currentFileName" style="font-weight: 500; font-size: 13px;">Select a
+                                    file</span>
+                                <button class="btn btn-primary" id="saveSkillFileBtn" disabled>Save</button>
+                            </div>
+                            <div class="editor-content" id="skillEditorContainer">
+                                <div class="empty-state">Select a file to edit</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 

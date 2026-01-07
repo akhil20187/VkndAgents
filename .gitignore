@@ -36,3 +36,7 @@ output/
 # Tool Metadata
 .auto-claude/
 .gemini/
+
+# Nodes
+.nodes/
+/presentation-runner

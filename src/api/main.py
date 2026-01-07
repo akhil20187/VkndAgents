@@ -335,7 +335,7 @@ async def run_single_task_execution(task_id: str, description: str):
         result = await sandbox.execute_prompt(
             prompt=description,
             task_id=task_id,
-            timeout_seconds=300
+            timeout_seconds=settings.e2b_timeout_seconds
         )
         
         # Determine final status
@@ -454,36 +454,111 @@ async def periodic_task_check():
 
 # Configuration API Endpoints
 
+
 @app.get("/api/skills")
 async def list_skills():
-    """List all available skills"""
-    import os
-    
+    """List all available skills with their file structure"""
     skills_dir = Path(__file__).parent.parent.parent / ".claude" / "skills"
     skills = []
     
     if skills_dir.exists():
         for skill_path in skills_dir.iterdir():
-            if skill_path.is_dir() and (skill_path / "SKILL.md").exists():
-                with open(skill_path / "SKILL.md", "r") as f:
-                    content = f.read()
+            if skill_path.is_dir():
+                # Get file structure
+                files = []
+                for item in skill_path.rglob("*"):
+                    rel_path = item.relative_to(skill_path)
+                    files.append({
+                        "path": str(rel_path),
+                        "type": "directory" if item.is_dir() else "file",
+                        "size": item.stat().st_size if item.is_file() else 0
+                    })
+                
+                # Sort files: directories first, then files
+                files.sort(key=lambda x: (x["type"] != "directory", x["path"]))
+                
                 skills.append({
                     "name": skill_path.name,
-                    "content": content
+                    "files": files
                 })
                 
     return {"skills": skills}
 
 
+@app.get("/api/skills/{skill_name}/files")
+async def get_skill_file(skill_name: str, path: str):
+    """Get content of a specific file in a skill"""
+    skills_dir = Path(__file__).parent.parent.parent / ".claude" / "skills"
+    file_path = skills_dir / skill_name / path
+    
+    # Security check: ensure path is within skill directory
+    try:
+        file_path = file_path.resolve()
+        skill_root = (skills_dir / skill_name).resolve()
+        if not str(file_path).startswith(str(skill_root)):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except Exception:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+        
+    try:
+        with open(file_path, "r") as f:
+            content = f.read()
+        return {"content": content, "path": path}
+    except UnicodeDecodeError:
+        return {"content": "(Binary file)", "path": path, "is_binary": True}
+
+
+@app.post("/api/skills/{skill_name}/files")
+async def save_skill_file(skill_name: str, file_data: dict):
+    """Save content to a specific file in a skill"""
+    path = file_data.get("path")
+    content = file_data.get("content")
+    
+    if not path or content is None:
+        raise HTTPException(status_code=400, detail="Missing path or content")
+        
+    skills_dir = Path(__file__).parent.parent.parent / ".claude" / "skills"
+    file_path = skills_dir / skill_name / path
+    
+    # Security check
+    try:
+        file_path = file_path.resolve()
+        skill_root = (skills_dir / skill_name).resolve()
+        # Allow creating new files, but check parent dir
+        if not str(file_path).startswith(str(skill_root)):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except Exception:
+         # If file doesn't exist yet, resolve() might fail content-wise depending on impl, 
+         # but usually on Path it just normalizes. 
+         # Let's use os.path.abspath logic manually if needed or just trust pathlib.
+         pass
+         
+    # Ensure parent directory exists
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    with open(file_path, "w") as f:
+        f.write(content)
+        
+    return {"status": "success", "path": path}
+
+
 @app.post("/api/skills")
-async def create_update_skill(skill: SkillCreate):
-    """Create or update a skill"""
+async def create_skill(skill: SkillCreate):
+    """Create a new skill (folder)"""
     skills_dir = Path(__file__).parent.parent.parent / ".claude" / "skills"
     skills_dir.mkdir(parents=True, exist_ok=True)
     
     skill_path = skills_dir / skill.name
+    
+    if skill_path.exists():
+         raise HTTPException(status_code=400, detail="Skill already exists")
+         
     skill_path.mkdir(exist_ok=True)
     
+    # Create initial SKILL.md
     with open(skill_path / "SKILL.md", "w") as f:
         f.write(skill.content)
         

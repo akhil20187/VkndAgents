@@ -39,7 +39,7 @@ class E2BSandbox:
         self,
         code: str,
         packages: Optional[list] = None,
-        timeout: int = 300
+        timeout: int = getattr(settings, 'e2b_timeout_seconds', 300)
     ) -> Dict[str, Any]:
         """
         Execute Python code in E2B sandbox.
@@ -149,7 +149,7 @@ class ClaudeCodeSandbox:
         prompt: str,
         task_id: Optional[str] = None,
         sync_output_dir: Optional[str] = None,
-        timeout_seconds: int = 300
+        timeout_seconds: int = getattr(settings, 'e2b_timeout_seconds', 300)
     ) -> Dict[str, Any]:
         """
         Execute a prompt using Claude Code CLI in E2B sandbox.
@@ -202,12 +202,20 @@ class ClaudeCodeSandbox:
             
             logger.info("e2b_claude_sandbox_starting", template_id=self.template_id)
             
-            # Create sandbox from template with ANTHROPIC_API_KEY
+            # Create sandbox from template with ANTHROPIC_API_KEY and ANTHROPIC_MODEL
             anthropic_key = getattr(settings, 'anthropic_api_key', None) or os.environ.get('ANTHROPIC_API_KEY')
+            anthropic_model = getattr(settings, 'anthropic_model', None) or os.environ.get('ANTHROPIC_MODEL')
+            
+            envs = {}
+            if anthropic_key:
+                envs["ANTHROPIC_API_KEY"] = anthropic_key
+            if anthropic_model:
+                envs["ANTHROPIC_MODEL"] = anthropic_model
+
             self.sandbox = Sandbox.create(
                 template=self.template_id, 
                 timeout=timeout_seconds,
-                envs={"ANTHROPIC_API_KEY": anthropic_key} if anthropic_key else None
+                envs=envs if envs else None
             )
             
             # Upload skills to the sandbox
